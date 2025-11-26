@@ -297,7 +297,7 @@ h2 {
   border-radius: 6px;
   transition: background-color 0.25s;
   z-index: 2;
-  font-size: 16px;
+  font-size: 0.83vw;
   border: 2px solid #f04d24;
 }
 
