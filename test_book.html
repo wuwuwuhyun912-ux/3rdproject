@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Continuous Book Flip (GSAP)</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #181818;
+        font-family: 'Noto Sans KR', sans-serif;
+        overflow-x: hidden;
+        color: #333;
+      }
+
+      section.book {
+        height: 100vh;
+        perspective: 2000px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: visible;
+      }
+
+      .page-wrapper {
+        position: relative;
+        width: 800px;
+        height: 500px;
+        perspective: 2500px;
+      }
+
+      .page {
+        position: absolute;
+        width: 50%;
+        height: 100%;
+        top: 0;
+        overflow: hidden;
+        backface-visibility: hidden;
+        transform-origin: left center;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+      }
+
+      .page.left {
+        left: 0;
+        transform-origin: right center;
+        background: linear-gradient(135deg, #e5dcc5, #d4c8a8);
+        border-right: 1px solid rgba(0, 0, 0, 0.2);
+        z-index: 10;
+      }
+
+      .page.right {
+        left: 50%;
+        background: linear-gradient(135deg, #f6f0dc, #e5dcc5);
+        transform-origin: left center;
+      }
+
+      /* 페이지별 z-index */
+      .page2 {
+        z-index: 9;
+      }
+      .page3 {
+        z-index: 8;
+      }
+      .page4 {
+        z-index: 7;
+      }
+
+      .page::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at left,
+          rgba(0, 0, 0, 0.15),
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+
+      .content {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: #333;
+        font-weight: 700;
+      }
+
+      .shadow {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to left, rgba(0, 0, 0, 0.25), transparent);
+        opacity: 0;
+      }
+
+      @media (max-width: 768px) {
+        .page-wrapper {
+          width: 90%;
+          height: 400px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="book">
+      <div class="page-wrapper">
+        <div class="page left"><div class="content">PAGE 1</div></div>
+
+        <div class="page right page2">
+          <div class="shadow"></div>
+          <div class="content">PAGE 2</div>
+        </div>
+        <div class="page right page3">
+          <div class="shadow"></div>
+          <div class="content">PAGE 3</div>
+        </div>
+        <div class="page right page4">
+          <div class="shadow"></div>
+          <div class="content">PAGE 4</div>
+        </div>
+      </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script>
+      gsap.registerPlugin(ScrollTrigger);
+
+      const pages = gsap.utils.toArray('.page.right');
+      const shadows = gsap.utils.toArray('.shadow');
+
+      // 초기 회전값 설정
+      pages.forEach((page) => gsap.set(page, { rotateY: 0 }));
+
+      const scrollLength = pages.length * window.innerHeight;
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: '.book',
+          start: 'top top',
+          end: '+=' + scrollLength,
+          scrub: 1.5,
+          pin: true,
+          anticipatePin: 1,
+        },
+      });
+
+      // 순차적으로 페이지 넘기기 (위에 있는 것부터)
+      pages.forEach((page, i) => {
+        const shadow = shadows[i];
+        tl.to(
+          page,
+          {
+            rotateY: -180,
+            ease: 'power2.inOut',
+            duration: 1,
+            onUpdate: function () {
+              const rot = this.targets()[0]._gsap.rotationY;
+              const opacity = Math.min(Math.abs(rot) / 150, 0.6);
+              gsap.set(shadow, { opacity });
+            },
+          },
+          '+=0.3'
+        );
+      });
+    </script>
+  </body>
+</html>
